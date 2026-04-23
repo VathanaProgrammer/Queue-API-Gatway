@@ -39,14 +39,14 @@ public class FlowController {
         try {
             String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
             
-            java.util.Map<String, String> body = new java.util.HashMap<>();
-            body.put("chat_id", CHAT_ID);
-            body.put("text", message);
-            body.put("parse_mode", "Markdown");
+            org.springframework.util.MultiValueMap<String, String> formData = new org.springframework.util.LinkedMultiValueMap<>();
+            formData.add("chat_id", CHAT_ID);
+            formData.add("text", message);
+            formData.add("parse_mode", "Markdown");
 
             WebClient.create().post()
                     .uri(url)
-                    .bodyValue(body)
+                    .body(org.springframework.web.reactive.function.BodyInserters.fromFormData(formData))
                     .retrieve()
                     .bodyToMono(String.class)
                     .doOnSuccess(s -> System.out.println("✅ Telegram Alert Sent!"))
