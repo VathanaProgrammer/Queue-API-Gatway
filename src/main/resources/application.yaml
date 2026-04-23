@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # New key for CORS
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+          
+          # New key for Routes
+          routes:
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: authService
+                    fallbackUri: forward:/authFallback
+
+            - id: queue-service
+              uri: lb://QUEUE-SERVICE
+              predicates:
+                - Path=/api/queue/**
+              filters:
+                - name: Authentication
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 5
+                    redis-rate-limiter.burstCapacity: 10
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: queueService
+                    fallbackUri: forward:/queueFallback
+
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - name: Authentication
+                - name: CircuitBreaker
+                  args:
+                    name: notificationService
+                    fallbackUri: forward:/notificationFallback
+
+  # Redis for Rate Limiting
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# Eureka Registry
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Security Config
+jwt:
+  secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+
+# Silence Resilience4j Warnings by adding default config
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 2s
+
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "gateway,health,info,circuitbreakers"
+  endpoint:
+    health:
+      show-details: always
