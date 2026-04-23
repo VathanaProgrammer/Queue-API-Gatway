@@ -39,9 +39,13 @@ jobs:
         to: ${{ secrets.TELEGRAM_CHAT_ID }}
         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         message: |
-          🚀 *Deployment Successful!*
+          🚀 *Auto-Deployment Successful!*
           
-          📝 *Commit:* ${{ github.event.head_commit.message }}
-          👤 *Author:* ${{ github.actor }}
-          ⏰ *Time:* ${{ github.event.head_commit.timestamp }}
+          📁 *Project:* Queue-API-Gatway
           🌐 *Server:* 54.175.71.17:8080
+          🌿 *Branch:* ${{ github.ref_name }}
+          👤 *Author:* ${{ github.actor }}
+          📝 *Commit:* ${{ github.event.head_commit.message }}
+          ⏰ *Time:* ${{ github.event.head_commit.timestamp }}
+          
+          ✅ *Status:* Online and healthy.
