@@ -1,4 +1,4 @@
-name: CI/CD Deploy to AWS
+name: CI/CD Deploy API Gateway to AWS
 
 on:
   push:
@@ -11,6 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set start time
+      run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -21,7 +24,7 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
-    - name: Deploy to Ubuntu Server
+    - name: Deploy to Gateway Server
       uses: appleboy/ssh-action@master
       with:
         host: ec2-54-175-71-17.compute-1.amazonaws.com
@@ -33,11 +36,17 @@ jobs:
           mvn clean package -DskipTests
           sudo systemctl restart gateway
 
-    - name: Get Formatted Time
-      id: time
-      run: echo "DEPLOY_TIME=$(TZ='Asia/Bangkok' date +'%Y-%m-%d %I:%M %p')" >> $GITHUB_OUTPUT
+    - name: Get Formatted Time & Duration
+      if: always()
+      id: info
+      run: |
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - START_TIME))
+        echo "DEPLOY_TIME=$(TZ='Asia/Bangkok' date +'%Y-%m-%d %I:%M %p')" >> $GITHUB_OUTPUT
+        echo "DURATION=$((DURATION / 60))m $((DURATION % 60))s" >> $GITHUB_OUTPUT
 
-    - name: Send Telegram Notification
+    - name: Send Success Telegram Notification
+      if: success()
       uses: appleboy/telegram-action@master
       with:
         to: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -50,6 +59,24 @@ jobs:
           🌿 *Branch:* ${{ github.ref_name }}
           👤 *Author:* ${{ github.actor }}
           📝 *Commit:* ${{ github.event.head_commit.message }}
-          ⏰ *Time:* ${{ steps.time.outputs.DEPLOY_TIME }}
+          ⏰ *Time:* ${{ steps.info.outputs.DEPLOY_TIME }}
+          ⏱️ *Duration:* ${{ steps.info.outputs.DURATION }}
           
           ✅ *Status:* Online and healthy.
+
+    - name: Send Failure Telegram Notification
+      if: failure()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: |
+          ⚠️ *Deployment FAILED!*
+          
+          📁 *Project:* Queue-API-Gatway
+          🌐 *Server:* 54.175.71.17:8080
+          👤 *Author:* ${{ github.actor }}
+          ⏰ *Time:* ${{ steps.info.outputs.DEPLOY_TIME }}
+          ⏱️ *Duration:* ${{ steps.info.outputs.DURATION }}
+          
+          ❌ *Status:* Action Required. Check logs on GitHub!
