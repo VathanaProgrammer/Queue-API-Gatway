@@ -31,9 +31,7 @@ jobs:
           cd Queue-API-Gatway
           git pull origin main
           mvn clean package -DskipTests
-          sudo pkill -f 'java -jar' || true
-          nohup java -jar target/API-Gatway-0.0.1-SNAPSHOT.jar > gateway.log 2>&1 &
-          sleep 5
+          sudo systemctl restart gateway
 
     - name: Send Telegram Notification
       uses: appleboy/telegram-action@master
