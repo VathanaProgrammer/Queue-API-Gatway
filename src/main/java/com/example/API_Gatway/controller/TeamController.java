@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 public class TeamController {
 
-    @GetMapping("/team")
+    @GetMapping("/")
     public Map<String, Object> getTeam() {
         String ip = "unknown";
         try {
@@ -31,7 +31,7 @@ public class TeamController {
         );
 
         return Map.of(
-            "message", "hello my team from " + ip + ":8080",
+            "message", "Hi you are from " + ip ,
             "team_members", members
         );
     }
