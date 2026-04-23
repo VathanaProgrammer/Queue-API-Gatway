@@ -3,260 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Architecture Flow | 3D System Logic</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <title>ACLEDA Ultimate | Perfect Connection Flow</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #a855f7;
-            --accent: #22d3ee;
-            --bg: #0b0f19;
-            --card-bg: rgba(23, 32, 53, 0.85);
+            --bg: #030712;
+            --primary: #6366f1; --accent: #22d3ee;
+            --glass: rgba(17, 24, 39, 0.9);
             --border: rgba(255, 255, 255, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            overflow: hidden;
-        }
+        .header { position: fixed; top: 2rem; left: 3rem; z-index: 1000; }
+        .header h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+        .header span { color: var(--accent); }
 
-        /* Tabs Navigation */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            background: var(--card-bg);
-            padding: 0.5rem;
-            border-radius: 100px;
-            border: 1px solid var(--border);
-            margin-bottom: 3rem;
-            z-index: 1000;
-        }
-
-        .tab-btn {
-            padding: 0.8rem 2rem;
-            border: none;
-            background: transparent;
-            color: #94a3b8;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 100px;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-        }
-
-        /* 3D Viewport */
-        .viewport {
-            perspective: 2000px;
-            width: 100%;
-            height: 70vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
+        .viewport { width: 100vw; height: 100vh; perspective: 3000px; display: flex; justify-content: center; align-items: center; }
+        
         .scene {
-            position: relative;
-            width: 1000px;
-            height: 600px;
-            transform-style: preserve-3d;
-            transform: rotateX(25deg) rotateY(-15deg);
-            transition: transform 0.5s ease-out;
-            display: none;
+            position: relative; width: 1800px; height: 1200px; transform-style: preserve-3d;
+            transform: rotateX(30deg) rotateY(-15deg) scale(var(--zoom, 0.5));
+            transition: transform 0.1s ease-out;
         }
 
-        .scene.active { display: block; animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-
-        @keyframes zoomIn { from { opacity: 0; transform: rotateX(25deg) rotateY(-15deg) scale(0.8) translateZ(-200px); } to { opacity: 1; transform: rotateX(25deg) rotateY(-15deg) scale(1); } }
-
-        /* 3D Card Style */
-        .step-node {
-            position: absolute;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 1.5rem;
-            backdrop-filter: blur(4px); /* Reduced for performance */
-            width: 240px;
-            transform-style: preserve-3d;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s;
-            will-change: transform; /* GPU Acceleration */
+        /* SVG Overlay for Lines */
+        #svg-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: visible;
         }
 
-        .step-node:hover {
-            border-color: var(--accent);
-            transform: translateZ(30px) translateY(-10px);
-            box-shadow: 0 25px 50px rgba(34, 211, 238, 0.2);
+        /* Nodes */
+        .node {
+            position: absolute; width: 260px; height: 130px; background: var(--glass);
+            border: 1px solid var(--border); border-radius: 24px; padding: 1.5rem;
+            backdrop-filter: blur(20px); cursor: pointer; transition: all 0.3s;
+            transform-style: preserve-3d; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-bottom: 4px solid var(--accent);
         }
+        .node:hover { transform: translateZ(30px) scale(1.05); border-color: white; }
+        .node h3 { font-size: 1.1rem; font-weight: 800; }
+        .node p { font-size: 0.65rem; color: #94a3b8; margin-top: 5px; }
 
-        .step-badge {
-            background: var(--primary);
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            margin-bottom: 1rem;
-        }
+        /* Staircase Layout Positions */
+        #n1 { top: 50px; left: 100px; }      /* Flutter App */
+        #n-gate { top: 50px; left: 450px; }  /* API Gateway */
+        #n-auth { top: 250px; left: 450px; }  /* Auth Service */
+        #n-eureka { top: 250px; left: 800px; }/* Discovery */
+        #n-queue { top: 450px; left: 800px; } /* Queue Service */
+        #n-redis { top: 450px; left: 1150px; }/* Redis Store */
+        #n-notify { top: 650px; left: 1150px; }/* Notify Service */
+        #n-fire { top: 850px; left: 1150px; }/* Firebase */
+        #n-admin { top: 650px; left: 800px; } /* Admin Panel */
+        #n-oracle { top: 850px; left: 800px; } /* Oracle DB */
 
-        .tech-label {
-            display: inline-block;
-            margin-top: 1rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0.3rem 0.8rem;
-            background: rgba(34, 211, 238, 0.1);
-            border-radius: 6px;
-        }
+        /* Modals */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.98); backdrop-filter: blur(20px); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal { background: #111827; border: 1px solid var(--border); border-radius: 40px; padding: 3rem; width: 95%; max-width: 1200px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; position: relative; }
+        .super-mockup { width: 100%; height: 500px; background: #000; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; position: relative; }
 
-        /* Directional Lines */
-        .path {
-            position: absolute;
-            height: 2px;
-            background: rgba(99, 102, 241, 0.2);
-            z-index: -1;
-        }
+        /* Phone */
+        .phone-frame { width: 220px; height: 440px; border: 8px solid #1e293b; border-radius: 40px; background: #000; margin: 30px auto; position: relative; overflow: hidden; font-family: 'Outfit', sans-serif; }
+        .f-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; padding: 1.5rem; text-align: center; }
+        .f-slide.active { display: flex; }
+        .f-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .f-btn { background: var(--primary); border: none; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 800; }
 
-        .path.active {
-            background: linear-gradient(to right, transparent, var(--accent), transparent);
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        .pulse {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 20px white;
-            animation: flow 4s infinite linear;
-        }
-
-        @keyframes flow {
-            0% { left: 0%; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { left: 100%; opacity: 0; }
-        }
-
-        /* Logic for Step Layout */
-        #step1 { top: 50px; left: 0; }
-        #step2 { top: 50px; left: 370px; }
-        #step3 { top: 350px; left: 370px; }
-        #step4 { top: 350px; left: 740px; }
-
-        /* Connecting Lines */
-        .l1 { top: 120px; left: 260px; width: 110px; } /* 1 -> 2 */
-        .l2 { top: 220px; left: 500px; width: 130px; height: 2px; transform: rotate(90deg); } /* 2 -> 3 */
-        .l3 { top: 420px; left: 630px; width: 110px; } /* 3 -> 4 */
-
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 2.8rem; letter-spacing: -1px; }
-        .header p { color: #94a3b8; font-size: 1.1rem; }
+        .controls { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--glass); padding: 0.8rem 2rem; border-radius: 100px; border: 1px solid var(--border); display: flex; gap: 20px; z-index: 1000; backdrop-filter: blur(20px); }
 
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>System <span style="color: var(--primary)">Logic Flow</span></h1>
-        <p>Real-time data movement across microservices</p>
+        <h1>Ultimate <span>Ecosystem</span></h1>
+        <p style="opacity:0.5; font-size:0.7rem; letter-spacing:2px;">MASTER CONNECTION FLOW</p>
     </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('logic')">🚀 The 4 Steps</button>
-        <button class="tab-btn" onclick="showTab('infra')">☁️ Infrastructure</button>
+    <div class="controls">
+        <input type="range" min="0.2" max="1.5" step="0.05" value="0.5" oninput="updateZoom(this.value)">
+        <button onclick="resetView()" style="background:var(--primary); border:none; color:white; padding:5px 15px; border-radius:50px; cursor:pointer;">RESET</button>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:white; cursor:pointer;" onclick="closeModal()"><i data-lucide="x-circle"></i></button>
+            <div id="modal-info"></div>
+            <div class="super-mockup" id="modal-visual"></div>
+        </div>
     </div>
 
     <div class="viewport">
-        <!-- Exact 4-Step Logic Flow -->
-        <div id="logic" class="scene active">
+        <div class="scene" id="scene">
+            <svg id="svg-canvas"></svg>
             
-            <div class="step-node" id="step1">
-                <div class="step-badge">1</div>
-                <h4>User Joins Line</h4>
-                <p>App &rarr; API Gateway &rarr; Queue Service</p>
-                <div class="tech-label">Spring Boot</div>
-            </div>
+            <div class="node" id="n1" onclick="openModal('flutter')"><h3>Flutter App</h3><p>Platform Entry (ABA/ACLEDA/GOV)</p></div>
+            <div class="node" id="n-gate" onclick="openModal('gateway')"><h3>API Gateway</h3><p>Master Entry Point & Router</p></div>
+            <div class="node" id="n-auth" onclick="openModal('auth')"><h3>Auth Service</h3><p>Identity & Security Guard</p></div>
+            <div class="node" id="n-eureka" onclick="openModal('eureka')"><h3>Discovery</h3><p>Eureka Registry</p></div>
+            <div class="node" id="n-queue" onclick="openModal('queue')"><h3>Queue Service</h3><p>Ticket Logic Engine</p></div>
+            <div class="node" id="n-redis" onclick="openModal('redis')"><h3>Redis Store</h3><p>Live Cache Store</p></div>
+            <div class="node" id="n-notify" onclick="openModal('notify')"><h3>Notify Srv</h3><p>Push Alert Engine</p></div>
+            <div class="node" id="n-fire" onclick="openModal('firebase')"><h3>Firebase</h3><p>Cloud Notification</p></div>
+            <div class="node" id="n-admin" onclick="openModal('admin')"><h3>Admin Panel</h3><p>Staff Operations UI</p></div>
+            <div class="node" id="n-oracle" onclick="openModal('oracle')"><h3>Oracle DB</h3><p>Persistent Logs</p></div>
 
-            <div class="path active l1"><div class="pulse"></div></div>
-
-            <div class="step-node" id="step2">
-                <div class="step-badge">2</div>
-                <h4>Ticket Created</h4>
-                <p>Ticket stored in high-speed cache for instant access.</p>
-                <div class="tech-label">NoSQL / Redis</div>
-            </div>
-
-            <div class="path active l2"><div class="pulse" style="animation-delay: 1.5s"></div></div>
-
-            <div class="step-node" id="step3">
-                <div class="step-badge">3</div>
-                <h4>Admin Clicks 'Next'</h4>
-                <p>Dashboard &rarr; Queue Service &rarr; Database</p>
-                <div class="tech-label">Spring Boot</div>
-            </div>
-
-            <div class="path active l3"><div class="pulse" style="animation-delay: 3s"></div></div>
-
-            <div class="step-node" id="step4">
-                <div class="step-badge">4</div>
-                <h4>Alert Sent</h4>
-                <p>Notification Service &rarr; Firebase &rarr; User Phone</p>
-                <div class="tech-label">Push Notifications</div>
-            </div>
-
-        </div>
-
-        <!-- Infrastructure Tab -->
-        <div id="infra" class="scene">
-            <div class="step-node" style="top: 150px; left: 100px; border-left: 5px solid #E95420;">
-                <h4>Gateway Server</h4>
-                <p>AWS EC2 - Ubuntu<br>Handling all traffic.</p>
-                <div class="tech-label">54.175.71.17</div>
-            </div>
-            <div class="path active" style="top: 220px; left: 360px; width: 280px;"><div class="pulse"></div></div>
-            <div class="step-node" style="top: 150px; left: 640px; border-left: 5px solid #2ea44f;">
-                <h4>Auth & Service Server</h4>
-                <p>AWS EC2 - Ubuntu<br>Running logic & CI/CD.</p>
-                <div class="tech-label">54.234.102.50</div>
-            </div>
         </div>
     </div>
 
     <script>
-        function showTab(tabId) {
-            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+        lucide.createIcons();
+        let fSlide = 0;
+
+        const superData = {
+            flutter: {
+                title: "Platform Ecosystem App",
+                desc: "Choose between ABA, ACLEDA, and GOV services.",
+                points: ["Logical Institution Routing", "Interactive Choice Buttons", "Deep-linked Flow"],
+                visual: `<div class="phone-frame">
+                    <!-- Screen 0: CHOICE -->
+                    <div class="f-slide active" id="f0"><h4>CHOOSE SERVICE</h4>
+                        <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-top:1.5rem; width:100%;">
+                            <div onclick="goToF(2)" style="background:#005da4; padding:12px; border-radius:8px; font-size:0.7rem; font-weight:800; cursor:pointer;">ABA BANK</div>
+                            <div onclick="goToF(1)" style="background:#004a80; padding:12px; border-radius:8px; font-size:0.7rem; font-weight:800; border:1px solid #22d3ee; cursor:pointer;">ACLEDA BANK</div>
+                            <div onclick="goToF(2)" style="background:#8b5cf6; padding:12px; border-radius:8px; font-size:0.7rem; font-weight:800; cursor:pointer;">GOV SERVICES</div>
+                        </div>
+                    </div>
+                    <!-- Screen 1: ACLEDA MENU -->
+                    <div class="f-slide" id="f1"><h4>ACLEDA MENU</h4>
+                        <div style="text-align:left; width:100%; margin-top:1rem; font-size:0.6rem;">
+                            <div style="padding:10px; border-bottom:1px solid #1e293b;">💳 My Accounts</div>
+                            <div style="padding:10px; border-bottom:1px solid #1e293b;">💸 Payments</div>
+                            <div onclick="goToF(3)" style="padding:10px; border-bottom:1px solid #1e293b; color:#22d3ee; cursor:pointer; font-weight:800;">🏃 Queue System</div>
+                        </div>
+                        <button onclick="goToF(0)" style="margin-top:auto; background:#1e293b; border:none; color:white; padding:8px; border-radius:5px; font-size:0.6rem;">BACK TO HOME</button>
+                    </div>
+                    <!-- Screen 2: GOV PORTAL -->
+                    <div class="f-slide" id="f2"><h4>GOV PORTAL</h4>
+                        <div style="text-align:left; width:100%; margin-top:1rem; font-size:0.6rem;">
+                            <p style="padding:10px; border-bottom:1px solid #1e293b;">📄 Tax Services</p>
+                            <p style="padding:10px; border-bottom:1px solid #1e293b;">🆔 ID Cards</p>
+                        </div>
+                        <button onclick="goToF(0)" style="margin-top:auto; background:#1e293b; border:none; color:white; padding:8px; border-radius:5px; font-size:0.6rem;">BACK TO HOME</button>
+                    </div>
+                    <!-- Screen 3: DISCOVERY -->
+                    <div class="f-slide" id="f3"><h4>DISCOVERY</h4><div style="background:#1e293b; padding:10px; border-radius:5px; margin-top:1rem;">Search: Central</div><p style="margin-top:2rem; font-size:0.6rem;">Wait Time: 40m</p>
+                        <div class="f-nav" style="position:relative; margin-top:2rem;"><button class="f-btn" onclick="goToF(1)">←</button><button class="f-btn" onclick="goToF(4)">→</button></div>
+                    </div>
+                    <!-- Screen 4: CONFIRM -->
+                    <div class="f-slide" id="f4"><h4>CONFIRM</h4><p style="margin-top:2rem">Join ACLEDA Central?</p>
+                        <div onclick="goToF(5)" style="background:#6366f1; padding:12px; border-radius:10px; margin-top:2rem; font-weight:800; cursor:pointer;">JOIN NOW</div>
+                        <button onclick="goToF(3)" style="margin-top:1rem; opacity:0.5;">Cancel</button>
+                    </div>
+                    <!-- Screen 5: LIVE TICKET -->
+                    <div class="f-slide" id="f5"><h4>LIVE TICKET</h4><div style="font-size:3rem; margin:1rem 0;">#055</div><p>Position: 5th</p>
+                        <div onclick="goToF(6)" style="margin-top:2rem; color:#22d3ee; font-size:0.6rem; cursor:pointer;">[ WAIT FOR ALERT ]</div>
+                    </div>
+                    <!-- Screen 6: NOTIFY -->
+                    <div class="f-slide" id="f6"><h4>NOTIFY</h4><div style="background:rgba(239,68,68,0.1); border:1px solid #ef4444; padding:15px; border-radius:10px; margin-top:2rem;">🔔 ALERT<br>It's your turn!</div>
+                        <button onclick="goToF(0)" style="margin-top:2rem; background:var(--primary); color:white; padding:10px; border:none; border-radius:5px; width:100%;">FINISH</button>
+                    </div>
+                </div>`
+            },
+            gateway: {
+                title: "Super Gateway Monitor",
+                desc: "Managing high-traffic routing and security.",
+                points: ["IP Forwarding: 54.175.71.17", "CORS Policy Sync"],
+                visual: `<div style="padding:2rem; color:#10b981; font-family:monospace; font-size:0.7rem;">
+                    <p>> GET /api/v1/queue/join 200 OK</p>
+                    <div style="margin-top:1rem; background:#1e293b; height:100px; border-radius:10px; padding:1rem;">
+                        <p>TRAFFIC: 1.2k req/sec</p>
+                        <p>HEALTH: 99.9%</p>
+                    </div>
+                </div>`
+            },
+            auth: {
+                title: "Auth Service (JWT)",
+                desc: "Secure identity provider.",
+                points: ["RS256 Signing", "Token Rotation"],
+                visual: `<div style="padding:2rem; color:#6366f1; font-family:monospace; font-size:0.7rem;">
+                    <p>[AUTH_REQUEST] user: vathana</p>
+                    <div style="background:rgba(168, 85, 247, 0.1); padding:10px; margin-top:1rem; border-radius:5px;">
+                        eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    </div>
+                </div>`
+            },
+            eureka: {
+                title: "Discovery (Eureka)",
+                desc: "Real-time service registry.",
+                points: ["Health Mapping"],
+                visual: `<div style="padding:2rem; color:#22d3ee; font-size:0.7rem;">
+                    <h4 style="border-bottom:1px solid #1e293b; padding-bottom:5px;">[INSTANCES]</h4>
+                    <p>QUEUE-SERVICE: UP</p>
+                    <p>NOTIFY-SERVICE: UP</p>
+                </div>`
+            },
+            redis: {
+                title: "Redis Live Cache",
+                desc: "Sub-millisecond state store.",
+                points: ["ticket:055", "pos:5"],
+                visual: `<div style="padding:2rem; color:#f43f5e; font-size:0.7rem;">
+                    <div style="margin-top:1rem; background:rgba(244,63,94,0.1); border:1px solid #f43f5e; padding:1rem; border-radius:10px;">
+                        "ticket:055" => {pos:5}
+                    </div>
+                </div>`
+            },
+            admin: {
+                title: "Teller Dashboard",
+                desc: "Staff control interface.",
+                points: ["Call Next", "Complete"],
+                visual: `<div style="padding:2rem; background:#1e293b; border-radius:20px; text-align:center;">
+                    <h4>COUNTER #01</h4>
+                    <h1 style="font-size:3rem; margin:1rem 0;">#054</h1>
+                    <button style="width:100%; background:#6366f1; border:none; padding:12px; border-radius:10px; color:white;">CALL NEXT</button>
+                </div>`
+            },
+            oracle: {
+                title: "Oracle SQL Explorer",
+                desc: "Persistent transaction history.",
+                points: ["ACID Compliance"],
+                visual: `<div style="padding:1.5rem; color:#94a3b8; font-size:0.7rem;">
+                    <p>SELECT * FROM tickets_history;</p>
+                    <table style="width:100%; border-collapse:collapse; margin-top:1rem;">
+                        <tr style="background:#1e293b; color:white;"><th style="padding:5px;">ID</th><th>STATUS</th></tr>
+                        <tr><td>1055</td><td>FINISHED</td></tr>
+                    </table>
+                </div>`
+            },
+            firebase: {
+                title: "Firebase FCM",
+                desc: "Push delivery engine.",
+                points: ["Delivery Orchestration"],
+                visual: `<div style="padding:2rem; color:#ffca28;">
+                    <pre style="background:rgba(255,202,40,0.1); padding:1rem; border-radius:10px; font-size:0.6rem;">
+{ "title": "ACLEDA", "body": "Your Turn!" }
+                    </pre>
+                </div>`
+            }
+        };
+
+        function goToF(index) {
+            const slides = document.querySelectorAll('.f-slide');
+            slides.forEach(s => s.classList.remove('active'));
+            document.getElementById('f'+index).classList.add('active');
+            fSlide = index;
+            lucide.createIcons();
         }
 
-        document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 60;
-            const y = (window.innerHeight / 2 - e.pageY) / 60;
-            document.querySelectorAll('.scene').forEach(scene => {
-                scene.style.transform = `rotateX(${25 + y}deg) rotateY(${-15 + x}deg)`;
+        function nextF() { goToF((fSlide + 1) % 7); }
+        function prevF() { goToF((fSlide - 1 + 7) % 7); }
+
+        function openModal(key) {
+            const data = superData[key] || { title: "Component", desc: "Logic.", points: ["Enterprise"], visual: "<div style='padding:4rem; text-align:center'>Dashboard</div>" };
+            document.getElementById('modal-info').innerHTML = `<h2 style="font-size:2.1rem">${data.title}</h2><p style="color:#94a3b8; margin-top:1rem;">${data.desc}</p><ul style="margin-top:2rem; list-style:none;">${data.points.map(p => `<li style="padding:10px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;"><i data-lucide="check" style="color:var(--accent); width:18px"></i> ${p}</li>`).join('')}</ul>`;
+            document.getElementById('modal-visual').innerHTML = data.visual;
+            document.getElementById('overlay').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+        function updateZoom(val) { document.documentElement.style.setProperty('--zoom', val); }
+        function resetView() { document.documentElement.style.setProperty('--zoom', 0.5); }
+
+        // THE PERFECT AUTO-FLOW SCRIPT
+        function drawLines() {
+            const svg = document.getElementById('svg-canvas');
+            svg.innerHTML = '';
+            const connections = [
+                ['n1', 'n-gate'], ['n-gate', 'n-auth'], ['n-gate', 'n-eureka'], ['n-eureka', 'n-queue'],
+                ['n-queue', 'n-redis'], ['n-queue', 'n-notify'], ['n-notify', 'n-fire'],
+                ['n-admin', 'n-queue'], ['n-queue', 'n-oracle']
+            ];
+
+            connections.forEach(([startId, endId]) => {
+                const start = document.getElementById(startId);
+                const end = document.getElementById(endId);
+                if (!start || !end) return;
+
+                const x1 = start.offsetLeft + start.offsetWidth / 2;
+                const y1 = start.offsetTop + start.offsetHeight / 2;
+                const x2 = end.offsetLeft + end.offsetWidth / 2;
+                const y2 = end.offsetTop + end.offsetHeight / 2;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('stroke', 'rgba(34, 211, 238, 0.4)');
+                line.setAttribute('stroke-width', '4');
+                line.setAttribute('stroke-dasharray', '10,5');
+                svg.appendChild(line);
             });
+        }
+
+        window.onload = drawLines;
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 100;
+            const y = (window.innerHeight / 2 - e.pageY) / 100;
+            document.getElementById('scene').style.transform = `rotateX(${30 + y}deg) rotateY(${-15 + x}deg) scale(var(--zoom, 0.5))`;
         });
     </script>
 </body>
