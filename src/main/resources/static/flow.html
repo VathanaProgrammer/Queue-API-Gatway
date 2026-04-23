@@ -3,222 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queue System Architecture Flow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Architecture Flow | 3D Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
             --secondary: #a855f7;
             --accent: #22d3ee;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text: #f8fafc;
+            --bg: #0b0f19;
+            --card-bg: rgba(23, 32, 53, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
-            color: var(--text);
+            color: white;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 4rem 2rem;
+            padding: 2rem;
             overflow-x: hidden;
         }
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 3rem;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-        }
-
-        .flow-container {
+        /* Tabs Navigation */
+        .tabs {
             display: flex;
-            flex-direction: column;
-            gap: 4rem;
-            width: 100%;
-            max-width: 900px;
-            position: relative;
-        }
-
-        /* Connecting Line */
-        .flow-container::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, var(--primary), var(--secondary), transparent);
-            transform: translateX(-50%);
-            z-index: 0;
-        }
-
-        .step-card {
+            gap: 1rem;
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 2rem;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 80px 1fr 150px;
-            align-items: center;
-            gap: 2rem;
-            position: relative;
-            z-index: 1;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: slideIn 0.8s ease-out forwards;
-            opacity: 0;
-        }
-
-        .step-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 800;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-        }
-
-        .step-content h3 {
-            font-size: 1.4rem;
-            margin-bottom: 0.5rem;
-            color: var(--accent);
-        }
-
-        .step-content p {
-            font-family: 'Inter', sans-serif;
-            color: #94a3b8;
-            line-height: 1.6;
-        }
-
-        .tech-badge {
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 0.5rem 1rem;
+            padding: 0.5rem;
             border-radius: 100px;
-            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            margin-bottom: 3rem;
+            z-index: 100;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
             font-weight: 600;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 100px;
+            transition: all 0.3s;
         }
 
-        /* Animation Keyframes */
-        @keyframes slideIn {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
         }
 
-        /* Flowing Particles */
-        .particle {
+        /* 3D Container */
+        .viewport {
+            perspective: 1500px;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            transform-style: preserve-3d;
+            transform: rotateX(20deg) rotateY(-10deg);
+            transition: transform 0.8s ease;
+            display: none;
+        }
+
+        .scene.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: rotateX(20deg) rotateY(-10deg) translateZ(-100px); } to { opacity: 1; } }
+
+        /* 3D Card Style */
+        .node {
+            position: absolute;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            width: 240px;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+
+        .node:hover {
+            transform: translateZ(20px);
+            border-color: var(--accent);
+        }
+
+        .node h4 { color: var(--accent); margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .node p { font-size: 0.9rem; color: #94a3b8; font-family: 'Inter', sans-serif; line-height: 1.4; }
+
+        /* Flowing Lines */
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            box-shadow: 0 0 10px var(--accent);
+            z-index: -1;
+        }
+
+        .pulse {
             position: absolute;
             width: 8px;
             height: 8px;
-            background: var(--accent);
+            background: white;
             border-radius: 50%;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 15px var(--accent);
-            animation: flow 3s infinite linear;
-            z-index: 0;
+            box-shadow: 0 0 15px white;
+            animation: moveAlong 3s infinite linear;
         }
 
-        @keyframes flow {
-            0% { top: -20px; opacity: 0; }
-            50% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+        @keyframes moveAlong {
+            0% { left: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
         }
 
-        /* Staggered animations */
-        .step-card:nth-child(1) { animation-delay: 0.2s; }
-        .step-card:nth-child(2) { animation-delay: 0.4s; }
-        .step-card:nth-child(3) { animation-delay: 0.6s; }
-        .step-card:nth-child(4) { animation-delay: 0.8s; }
+        /* Specific Positions for Back-end Tab */
+        #be-gateway { top: 150px; left: 0; }
+        #be-queue { top: 150px; left: 380px; }
+        #be-db { top: 150px; left: 760px; }
 
-        @media (max-width: 768px) {
-            .step-card {
-                grid-template-columns: 1fr;
-                text-align: center;
-                justify-items: center;
-            }
-            .flow-container::before { left: 2rem; }
-            .particle { left: 2rem; }
-        }
+        .line-1 { top: 190px; left: 240px; width: 140px; }
+        .line-2 { top: 190px; left: 620px; width: 140px; }
+
+        /* Flutter Tab */
+        #fl-ui { top: 100px; left: 150px; width: 300px; height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        #fl-api { top: 150px; left: 600px; }
+        .line-fl { top: 200px; left: 450px; width: 150px; }
+
+        /* Server Tab */
+        #srv-ubuntu1 { top: 50px; left: 200px; border-left: 5px solid #E95420; }
+        #srv-ubuntu2 { top: 250px; left: 200px; border-left: 5px solid #E95420; }
+        #srv-cicd { top: 150px; left: 600px; border-left: 5px solid #2ea44f; }
+
+        .line-srv1 { top: 90px; left: 440px; width: 160px; transform: rotate(20deg); }
+        .line-srv2 { top: 290px; left: 440px; width: 160px; transform: rotate(-20deg); }
+
+        .footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
+
     </style>
 </head>
 <body>
 
-    <h1>System Architecture Workflow</h1>
+    <h1 style="margin-bottom: 2rem; font-size: 2.5rem; letter-spacing: -1px;">Architecture <span style="color: var(--primary)">Flow</span></h1>
 
-    <div class="flow-container">
-        <!-- Animation Particles -->
-        <div class="particle" style="animation-delay: 0s"></div>
-        <div class="particle" style="animation-delay: 1s"></div>
-        <div class="particle" style="animation-delay: 2s"></div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('flutter')">📱 Flutter UI</button>
+        <button class="tab-btn" onclick="showTab('backend')">⚙️ Back-end</button>
+        <button class="tab-btn" onclick="showTab('server')">🐧 Ubuntu Server</button>
+    </div>
 
-        <div class="step-card">
-            <div class="step-number">1</div>
-            <div class="step-content">
-                <h3>User Joins Line</h3>
-                <p>Request travels from Mobile App through the <strong>API Gateway</strong> and is routed to the <strong>Queue Service</strong>.</p>
+    <div class="viewport">
+        <!-- Flutter UI Tab -->
+        <div id="flutter" class="scene active">
+            <div class="node" id="fl-ui">
+                <div style="width: 60px; height: 100px; border: 3px solid white; border-radius: 10px; margin-bottom: 1rem; position: relative;">
+                    <div style="width: 20px; height: 4px; background: white; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);"></div>
+                </div>
+                <h4>Flutter App</h4>
+                <p>Reactive UI handling User Inputs and "Join Queue" button click.</p>
             </div>
-            <div class="tech-badge">Spring Boot</div>
+            <div class="connection line-fl"><div class="pulse"></div></div>
+            <div class="node" id="fl-api">
+                <h4>API Calls</h4>
+                <p>Dio / Http request sent to Gateway with JWT Token.</p>
+            </div>
         </div>
 
-        <div class="step-card">
-            <div class="step-number">2</div>
-            <div class="step-content">
-                <h3>Ticket Created</h3>
-                <p>A unique ticket is generated and instantly stored in a high-speed cache for ultra-fast retrieval.</p>
+        <!-- Back-end Tab -->
+        <div id="backend" class="scene">
+            <div class="node" id="be-gateway">
+                <h4>API Gateway</h4>
+                <p>Authenticates request and routes to Queue Service.</p>
             </div>
-            <div class="tech-badge">NoSQL / Redis</div>
+            <div class="connection line-1"><div class="pulse"></div></div>
+            <div class="node" id="be-queue">
+                <h4>Queue Service</h4>
+                <p>Creates tickets and manages the logic in Redis.</p>
+            </div>
+            <div class="connection line-2"><div class="pulse"></div></div>
+            <div class="node" id="be-db">
+                <h4>Oracle DB</h4>
+                <p>Final persistence for all system data.</p>
+            </div>
         </div>
 
-        <div class="step-card">
-            <div class="step-number">3</div>
-            <div class="step-content">
-                <h3>Admin Clicks 'Next'</h3>
-                <p>The Admin Dashboard triggers the <strong>Queue Service</strong> to update the ticket status in the main <strong>Oracle Database</strong>.</p>
+        <!-- Server Tab -->
+        <div id="server" class="scene">
+            <div class="node" id="srv-ubuntu1">
+                <h4>EC2: Gateway</h4>
+                <p>Ubuntu 22.04 LTS<br>IP: 54.175.71.17</p>
             </div>
-            <div class="tech-badge">Spring Boot</div>
-        </div>
-
-        <div class="step-card">
-            <div class="step-number">4</div>
-            <div class="step-content">
-                <h3>Alert Sent</h3>
-                <p>The <strong>Notification Service</strong> triggers <strong>Firebase</strong> to send a real-time push alert to the user's phone.</p>
+            <div class="node" id="srv-ubuntu2">
+                <h4>EC2: Auth</h4>
+                <p>Ubuntu 22.04 LTS<br>IP: 54.234.102.50</p>
             </div>
-            <div class="tech-badge">Firebase</div>
+            <div class="connection line-srv1"><div class="pulse"></div></div>
+            <div class="connection line-srv2"><div class="pulse" style="animation-delay: 1s"></div></div>
+            <div class="node" id="srv-cicd">
+                <h4>GitHub CI/CD</h4>
+                <p>Auto-Deploy with Telegram Alerts & Systemd.</p>
+            </div>
         </div>
     </div>
 
+    <div class="footer">Interactive 3D Flow Visualization | Vathana Team</div>
+
+    <script>
+        function showTab(tabId) {
+            // Remove active classes
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            // Add active class to selected
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Add slight mouse move effect
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 50;
+            const y = (window.innerHeight / 2 - e.pageY) / 50;
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.style.transform = `rotateX(${20 + y}deg) rotateY(${-10 + x}deg)`;
+            });
+        });
+    </script>
 </body>
 </html>
