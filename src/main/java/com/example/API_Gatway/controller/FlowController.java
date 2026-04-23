@@ -20,24 +20,35 @@ public class FlowController {
 
     @GetMapping(value = {"/", "/flow"}, produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
-    public Mono<Resource> getFlow() {
-        sendTelegram("🚀 Vathana, someone just opened the Architecture Dashboard!");
+    public Mono<Resource> getFlow(org.springframework.http.server.reactive.ServerHttpRequest request) {
+        String ip = request.getRemoteAddress().getHostString();
+        String userAgent = request.getHeaders().getFirst("User-Agent");
+        
+        String message = String.format(
+            "🚀 *Vathana, Someone is here!* \n\n" +
+            "📍 *IP:* %s\n" +
+            "📱 *Device:* %s", 
+            ip, userAgent
+        );
+
+        sendTelegram(message);
         return Mono.just(new ClassPathResource("static/flow.html"));
     }
 
     private void sendTelegram(String message) {
         try {
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&text=" + encodedMsg;
+            String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&text=" + encodedMsg + "&parse_mode=Markdown";
             
-            // Asynchronous call so it doesn't block the user
             WebClient.create().get()
                     .uri(url)
                     .retrieve()
                     .bodyToMono(String.class)
+                    .doOnSuccess(s -> System.out.println("✅ Telegram Alert Sent!"))
+                    .doOnError(e -> System.err.println("❌ Telegram Error: " + e.getMessage()))
                     .subscribe(); 
         } catch (Exception e) {
-            System.err.println("Telegram notification failed: " + e.getMessage());
+            System.err.println("❌ Telegram notification failed: " + e.getMessage());
         }
     }
 }
