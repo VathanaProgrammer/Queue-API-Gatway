@@ -33,6 +33,10 @@ jobs:
           mvn clean package -DskipTests
           sudo systemctl restart gateway
 
+    - name: Get Formatted Time
+      id: time
+      run: echo "DEPLOY_TIME=$(TZ='Asia/Bangkok' date +'%Y-%m-%d %I:%M %p')" >> $GITHUB_OUTPUT
+
     - name: Send Telegram Notification
       uses: appleboy/telegram-action@master
       with:
@@ -46,6 +50,6 @@ jobs:
           🌿 *Branch:* ${{ github.ref_name }}
           👤 *Author:* ${{ github.actor }}
           📝 *Commit:* ${{ github.event.head_commit.message }}
-          ⏰ *Time:* ${{ github.event.head_commit.timestamp }}
+          ⏰ *Time:* ${{ steps.time.outputs.DEPLOY_TIME }}
           
           ✅ *Status:* Online and healthy.
