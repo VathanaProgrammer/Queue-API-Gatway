@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Architecture Flow | 3D Dashboard</title>
+    <title>Architecture Flow | 3D System Logic</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,7 +11,7 @@
             --secondary: #a855f7;
             --accent: #22d3ee;
             --bg: #0b0f19;
-            --card-bg: rgba(23, 32, 53, 0.8);
+            --card-bg: rgba(23, 32, 53, 0.85);
             --border: rgba(255, 255, 255, 0.1);
         }
 
@@ -26,7 +26,7 @@
             flex-direction: column;
             align-items: center;
             padding: 2rem;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         /* Tabs Navigation */
@@ -38,7 +38,7 @@
             border-radius: 100px;
             border: 1px solid var(--border);
             margin-bottom: 3rem;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .tab-btn {
@@ -58,11 +58,11 @@
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
         }
 
-        /* 3D Container */
+        /* 3D Viewport */
         .viewport {
-            perspective: 1500px;
+            perspective: 2000px;
             width: 100%;
-            max-width: 1000px;
+            height: 70vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -70,174 +70,190 @@
 
         .scene {
             position: relative;
-            width: 100%;
-            height: 500px;
+            width: 1000px;
+            height: 600px;
             transform-style: preserve-3d;
-            transform: rotateX(20deg) rotateY(-10deg);
-            transition: transform 0.8s ease;
+            transform: rotateX(25deg) rotateY(-15deg);
+            transition: transform 0.5s ease-out;
             display: none;
         }
 
-        .scene.active { display: block; animation: fadeIn 0.5s ease; }
+        .scene.active { display: block; animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: rotateX(20deg) rotateY(-10deg) translateZ(-100px); } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: rotateX(25deg) rotateY(-15deg) scale(0.8) translateZ(-200px); } to { opacity: 1; transform: rotateX(25deg) rotateY(-15deg) scale(1); } }
 
-        /* 3D Card Style */
-        .node {
+        /* Step Nodes */
+        .step-node {
             position: absolute;
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            width: 240px;
+            width: 260px;
             transform-style: preserve-3d;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            transition: all 0.4s;
         }
 
-        .node:hover {
-            transform: translateZ(20px);
+        .step-node:hover {
             border-color: var(--accent);
+            transform: translateZ(30px) translateY(-10px);
+            box-shadow: 0 25px 50px rgba(34, 211, 238, 0.2);
         }
 
-        .node h4 { color: var(--accent); margin-bottom: 0.5rem; font-size: 1.2rem; }
-        .node p { font-size: 0.9rem; color: #94a3b8; font-family: 'Inter', sans-serif; line-height: 1.4; }
+        .step-badge {
+            background: var(--primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
 
-        /* Flowing Lines */
-        .connection {
+        .tech-label {
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.3rem 0.8rem;
+            background: rgba(34, 211, 238, 0.1);
+            border-radius: 6px;
+        }
+
+        /* Directional Lines */
+        .path {
             position: absolute;
             height: 2px;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            box-shadow: 0 0 10px var(--accent);
+            background: rgba(99, 102, 241, 0.2);
             z-index: -1;
+        }
+
+        .path.active {
+            background: linear-gradient(to right, transparent, var(--accent), transparent);
+            box-shadow: 0 0 15px var(--accent);
         }
 
         .pulse {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: white;
             border-radius: 50%;
-            box-shadow: 0 0 15px white;
-            animation: moveAlong 3s infinite linear;
+            box-shadow: 0 0 20px white;
+            animation: flow 4s infinite linear;
         }
 
-        @keyframes moveAlong {
+        @keyframes flow {
             0% { left: 0%; opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { left: 100%; opacity: 0; }
         }
 
-        /* Specific Positions for Back-end Tab */
-        #be-gateway { top: 150px; left: 0; }
-        #be-queue { top: 150px; left: 380px; }
-        #be-db { top: 150px; left: 760px; }
+        /* Logic for Step Layout */
+        #step1 { top: 50px; left: 0; }
+        #step2 { top: 50px; left: 370px; }
+        #step3 { top: 350px; left: 370px; }
+        #step4 { top: 350px; left: 740px; }
 
-        .line-1 { top: 190px; left: 240px; width: 140px; }
-        .line-2 { top: 190px; left: 620px; width: 140px; }
+        /* Connecting Lines */
+        .l1 { top: 120px; left: 260px; width: 110px; } /* 1 -> 2 */
+        .l2 { top: 220px; left: 500px; width: 130px; height: 2px; transform: rotate(90deg); } /* 2 -> 3 */
+        .l3 { top: 420px; left: 630px; width: 110px; } /* 3 -> 4 */
 
-        /* Flutter Tab */
-        #fl-ui { top: 100px; left: 150px; width: 300px; height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;}
-        #fl-api { top: 150px; left: 600px; }
-        .line-fl { top: 200px; left: 450px; width: 150px; }
-
-        /* Server Tab */
-        #srv-ubuntu1 { top: 50px; left: 200px; border-left: 5px solid #E95420; }
-        #srv-ubuntu2 { top: 250px; left: 200px; border-left: 5px solid #E95420; }
-        #srv-cicd { top: 150px; left: 600px; border-left: 5px solid #2ea44f; }
-
-        .line-srv1 { top: 90px; left: 440px; width: 160px; transform: rotate(20deg); }
-        .line-srv2 { top: 290px; left: 440px; width: 160px; transform: rotate(-20deg); }
-
-        .footer { margin-top: 2rem; color: #64748b; font-size: 0.9rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.8rem; letter-spacing: -1px; }
+        .header p { color: #94a3b8; font-size: 1.1rem; }
 
     </style>
 </head>
 <body>
 
-    <h1 style="margin-bottom: 2rem; font-size: 2.5rem; letter-spacing: -1px;">Architecture <span style="color: var(--primary)">Flow</span></h1>
+    <div class="header">
+        <h1>System <span style="color: var(--primary)">Logic Flow</span></h1>
+        <p>Real-time data movement across microservices</p>
+    </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('flutter')">📱 Flutter UI</button>
-        <button class="tab-btn" onclick="showTab('backend')">⚙️ Back-end</button>
-        <button class="tab-btn" onclick="showTab('server')">🐧 Ubuntu Server</button>
+        <button class="tab-btn active" onclick="showTab('logic')">🚀 The 4 Steps</button>
+        <button class="tab-btn" onclick="showTab('infra')">☁️ Infrastructure</button>
     </div>
 
     <div class="viewport">
-        <!-- Flutter UI Tab -->
-        <div id="flutter" class="scene active">
-            <div class="node" id="fl-ui">
-                <div style="width: 60px; height: 100px; border: 3px solid white; border-radius: 10px; margin-bottom: 1rem; position: relative;">
-                    <div style="width: 20px; height: 4px; background: white; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);"></div>
-                </div>
-                <h4>Flutter App</h4>
-                <p>Reactive UI handling User Inputs and "Join Queue" button click.</p>
+        <!-- Exact 4-Step Logic Flow -->
+        <div id="logic" class="scene active">
+            
+            <div class="step-node" id="step1">
+                <div class="step-badge">1</div>
+                <h4>User Joins Line</h4>
+                <p>App &rarr; API Gateway &rarr; Queue Service</p>
+                <div class="tech-label">Spring Boot</div>
             </div>
-            <div class="connection line-fl"><div class="pulse"></div></div>
-            <div class="node" id="fl-api">
-                <h4>API Calls</h4>
-                <p>Dio / Http request sent to Gateway with JWT Token.</p>
+
+            <div class="path active l1"><div class="pulse"></div></div>
+
+            <div class="step-node" id="step2">
+                <div class="step-badge">2</div>
+                <h4>Ticket Created</h4>
+                <p>Ticket stored in high-speed cache for instant access.</p>
+                <div class="tech-label">NoSQL / Redis</div>
             </div>
+
+            <div class="path active l2"><div class="pulse" style="animation-delay: 1.5s"></div></div>
+
+            <div class="step-node" id="step3">
+                <div class="step-badge">3</div>
+                <h4>Admin Clicks 'Next'</h4>
+                <p>Dashboard &rarr; Queue Service &rarr; Database</p>
+                <div class="tech-label">Spring Boot</div>
+            </div>
+
+            <div class="path active l3"><div class="pulse" style="animation-delay: 3s"></div></div>
+
+            <div class="step-node" id="step4">
+                <div class="step-badge">4</div>
+                <h4>Alert Sent</h4>
+                <p>Notification Service &rarr; Firebase &rarr; User Phone</p>
+                <div class="tech-label">Push Notifications</div>
+            </div>
+
         </div>
 
-        <!-- Back-end Tab -->
-        <div id="backend" class="scene">
-            <div class="node" id="be-gateway">
-                <h4>API Gateway</h4>
-                <p>Authenticates request and routes to Queue Service.</p>
+        <!-- Infrastructure Tab -->
+        <div id="infra" class="scene">
+            <div class="step-node" style="top: 150px; left: 100px; border-left: 5px solid #E95420;">
+                <h4>Gateway Server</h4>
+                <p>AWS EC2 - Ubuntu<br>Handling all traffic.</p>
+                <div class="tech-label">54.175.71.17</div>
             </div>
-            <div class="connection line-1"><div class="pulse"></div></div>
-            <div class="node" id="be-queue">
-                <h4>Queue Service</h4>
-                <p>Creates tickets and manages the logic in Redis.</p>
-            </div>
-            <div class="connection line-2"><div class="pulse"></div></div>
-            <div class="node" id="be-db">
-                <h4>Oracle DB</h4>
-                <p>Final persistence for all system data.</p>
-            </div>
-        </div>
-
-        <!-- Server Tab -->
-        <div id="server" class="scene">
-            <div class="node" id="srv-ubuntu1">
-                <h4>EC2: Gateway</h4>
-                <p>Ubuntu 22.04 LTS<br>IP: 54.175.71.17</p>
-            </div>
-            <div class="node" id="srv-ubuntu2">
-                <h4>EC2: Auth</h4>
-                <p>Ubuntu 22.04 LTS<br>IP: 54.234.102.50</p>
-            </div>
-            <div class="connection line-srv1"><div class="pulse"></div></div>
-            <div class="connection line-srv2"><div class="pulse" style="animation-delay: 1s"></div></div>
-            <div class="node" id="srv-cicd">
-                <h4>GitHub CI/CD</h4>
-                <p>Auto-Deploy with Telegram Alerts & Systemd.</p>
+            <div class="path active" style="top: 220px; left: 360px; width: 280px;"><div class="pulse"></div></div>
+            <div class="step-node" style="top: 150px; left: 640px; border-left: 5px solid #2ea44f;">
+                <h4>Auth & Service Server</h4>
+                <p>AWS EC2 - Ubuntu<br>Running logic & CI/CD.</p>
+                <div class="tech-label">54.234.102.50</div>
             </div>
         </div>
     </div>
 
-    <div class="footer">Interactive 3D Flow Visualization | Vathana Team</div>
-
     <script>
         function showTab(tabId) {
-            // Remove active classes
             document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            // Add active class to selected
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
         }
 
-        // Add slight mouse move effect
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 50;
-            const y = (window.innerHeight / 2 - e.pageY) / 50;
+            const x = (window.innerWidth / 2 - e.pageX) / 60;
+            const y = (window.innerHeight / 2 - e.pageY) / 60;
             document.querySelectorAll('.scene').forEach(scene => {
-                scene.style.transform = `rotateX(${20 + y}deg) rotateY(${-10 + x}deg)`;
+                scene.style.transform = `rotateX(${25 + y}deg) rotateY(${-15 + x}deg)`;
             });
         });
     </script>
