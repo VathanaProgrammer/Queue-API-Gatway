@@ -1,0 +1,48 @@
+name: CI/CD Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
+    - name: Deploy to Ubuntu Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-54-175-71-17.compute-1.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd Queue-API-Gatway
+          git pull origin main
+          mvn clean package -DskipTests
+          pkill -f java || true
+          nohup java -jar target/API-Gatway-0.0.1-SNAPSHOT.jar > gateway.log 2>&1 &
+
+    - name: Send Telegram Notification
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: |
+          🚀 *Deployment Successful!*
+          
+          📝 *Commit:* ${{ github.event.head_commit.message }}
+          👤 *Author:* ${{ github.actor }}
+          ⏰ *Time:* ${{ github.event.head_commit.timestamp }}
+          🌐 *Server:* 54.175.71.17:8080
