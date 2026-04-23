@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue System Architecture Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #22d3ee;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4rem 2rem;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        /* Connecting Line */
+        .flow-container::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, var(--primary), var(--secondary), transparent);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .step-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 80px 1fr 150px;
+            align-items: center;
+            gap: 2rem;
+            position: relative;
+            z-index: 1;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .step-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .step-content p {
+            font-family: 'Inter', sans-serif;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .tech-badge {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Animation Keyframes */
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Flowing Particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px var(--accent);
+            animation: flow 3s infinite linear;
+            z-index: 0;
+        }
+
+        @keyframes flow {
+            0% { top: -20px; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Staggered animations */
+        .step-card:nth-child(1) { animation-delay: 0.2s; }
+        .step-card:nth-child(2) { animation-delay: 0.4s; }
+        .step-card:nth-child(3) { animation-delay: 0.6s; }
+        .step-card:nth-child(4) { animation-delay: 0.8s; }
+
+        @media (max-width: 768px) {
+            .step-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                justify-items: center;
+            }
+            .flow-container::before { left: 2rem; }
+            .particle { left: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>System Architecture Workflow</h1>
+
+    <div class="flow-container">
+        <!-- Animation Particles -->
+        <div class="particle" style="animation-delay: 0s"></div>
+        <div class="particle" style="animation-delay: 1s"></div>
+        <div class="particle" style="animation-delay: 2s"></div>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>User Joins Line</h3>
+                <p>Request travels from Mobile App through the <strong>API Gateway</strong> and is routed to the <strong>Queue Service</strong>.</p>
+            </div>
+            <div class="tech-badge">Spring Boot</div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>Ticket Created</h3>
+                <p>A unique ticket is generated and instantly stored in a high-speed cache for ultra-fast retrieval.</p>
+            </div>
+            <div class="tech-badge">NoSQL / Redis</div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Admin Clicks 'Next'</h3>
+                <p>The Admin Dashboard triggers the <strong>Queue Service</strong> to update the ticket status in the main <strong>Oracle Database</strong>.</p>
+            </div>
+            <div class="tech-badge">Spring Boot</div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h3>Alert Sent</h3>
+                <p>The <strong>Notification Service</strong> triggers <strong>Firebase</strong> to send a real-time push alert to the user's phone.</p>
+            </div>
+            <div class="tech-badge">Firebase</div>
+        </div>
+    </div>
+
+</body>
+</html>
