@@ -37,11 +37,16 @@ public class FlowController {
 
     private void sendTelegram(String message) {
         try {
-            String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage?chat_id=" + CHAT_ID + "&text=" + encodedMsg + "&parse_mode=Markdown";
+            String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
             
-            WebClient.create().get()
+            java.util.Map<String, String> body = new java.util.HashMap<>();
+            body.put("chat_id", CHAT_ID);
+            body.put("text", message);
+            body.put("parse_mode", "Markdown");
+
+            WebClient.create().post()
                     .uri(url)
+                    .bodyValue(body)
                     .retrieve()
                     .bodyToMono(String.class)
                     .doOnSuccess(s -> System.out.println("✅ Telegram Alert Sent!"))
