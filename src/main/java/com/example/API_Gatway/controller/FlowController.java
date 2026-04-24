@@ -21,8 +21,13 @@ public class FlowController {
     @GetMapping(value = {"/", "/flow"}, produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public Mono<Resource> getFlow(org.springframework.http.server.reactive.ServerHttpRequest request) {
-        String ip = request.getRemoteAddress().getHostString();
+        String ip = "Unknown";
+        if (request.getRemoteAddress() != null) {
+            ip = request.getRemoteAddress().getHostString();
+        }
+
         String userAgent = request.getHeaders().getFirst("User-Agent");
+        if (userAgent == null) userAgent = "Unknown Device";
         
         String message = String.format(
             "🚀 *Hello Vathana, Someone is here!* \n\n" +
