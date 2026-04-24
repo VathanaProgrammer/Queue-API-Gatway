@@ -15,6 +15,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class TelegramNotificationFilter implements GlobalFilter, Ordered {
 
+    static {
+        System.out.println("!!! [ALARM] TELEGRAM NOTIFICATION FILTER IS ACTIVE AND LOADED !!!");
+    }
+
     private final String BOT_TOKEN = "8743357845:AAFlxUVDPjPZizW7uiR1fop280LMav6zK48";
     private final String CHAT_ID = "1694864242";
 
@@ -25,15 +29,22 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
             String path = request.getPath().value();
             
             // GLOBAL ALARM
-            System.out.println(">>> [GATEWAY] HIT: " + path + " | From: " + request.getRemoteAddress());
+            System.out.println(">>> [GATEWAY] HIT DETECTED! Path: " + path + " | IP: " + (request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown"));
 
-            if (path.equals("/") || path.equals("/flow") || path.contains("flow.html")) {
+            // CATCH EVERYTHING: /, /flow, /flow.html
+            boolean isDashboard = path.equals("/") || path.equalsIgnoreCase("/flow") || path.toLowerCase().contains("flow.html");
+
+            if (isDashboard) {
+                System.out.println("!!! [ALARM] TRIGGERING TELEGRAM ALERT NOW !!!");
                 String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
                 String userAgent = request.getHeaders().getFirst("User-Agent");
                 if (userAgent == null) userAgent = "Unknown Device";
 
                 String message = String.format(
-                    "🚀 *Vathana, Someone is here!* \n\n📍 *IP:* %s\n📱 *Device:* %s\n🔗 *Path:* %s", 
+                    "🚨 *VATHANA! VISITOR ALERT!* 🚨\n\n" +
+                    "📍 *IP:* %s\n" +
+                    "📱 *Device:* %s\n" +
+                    "🔗 *Target:* %s", 
                     ip, userAgent, path
                 );
 
