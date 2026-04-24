@@ -20,26 +20,27 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(org.springframework.web.server.ServerWebExchange exchange, GatewayFilterChain chain) {
-        ServerHttpRequest request = exchange.getRequest();
-        String path = request.getPath().value();
-
-        // ONLY trigger for the Dashboard routes
-        if (path.equals("/") || path.equals("/flow") || path.contains("flow.html")) {
-            System.out.println("!!! [GATEWAY FILTER] DETECTED VISITOR ON: " + path);
+        try {
+            ServerHttpRequest request = exchange.getRequest();
+            String path = request.getPath().value();
             
-            String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
-            String userAgent = request.getHeaders().getFirst("User-Agent");
-            if (userAgent == null) userAgent = "Unknown Device";
+            // GLOBAL ALARM
+            System.out.println(">>> [GATEWAY] HIT: " + path + " | From: " + request.getRemoteAddress());
 
-            String message = String.format(
-                "🚀 *Vathana, External Visit!* \n\n" +
-                "📍 *IP:* %s\n" +
-                "📱 *Device:* %s\n" +
-                "🔗 *Path:* %s", 
-                ip, userAgent, path
-            );
+            if (path.equals("/") || path.equals("/flow") || path.contains("flow.html")) {
+                String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
+                String userAgent = request.getHeaders().getFirst("User-Agent");
+                if (userAgent == null) userAgent = "Unknown Device";
 
-            sendTelegram(message);
+                String message = String.format(
+                    "🚀 *Vathana, Someone is here!* \n\n📍 *IP:* %s\n📱 *Device:* %s\n🔗 *Path:* %s", 
+                    ip, userAgent, path
+                );
+
+                sendTelegram(message);
+            }
+        } catch (Exception e) {
+            System.err.println("!!! [FILTER ERROR] " + e.getMessage());
         }
 
         return chain.filter(exchange);
