@@ -15,17 +15,26 @@ public class FirebaseConfig {
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
-                InputStream serviceAccount = new ClassPathResource("queue-project-9c331-firebase-adminsdk-fbsvc-1e36769c33.json").getInputStream();
+                String fileName = "queue-project-9c331-firebase-adminsdk-fbsvc-1e36769c33.json";
+                InputStream serviceAccount;
+
+                try {
+                    serviceAccount = new ClassPathResource(fileName).getInputStream();
+                } catch (IOException e) {
+                    System.out.println("⚠️ [FIREBASE] ClassPath load failed, trying absolute path...");
+                    serviceAccount = new java.io.FileInputStream("D:\\SpringProjects\\API\\API-Gatway\\src\\main\\resources\\" + fileName);
+                }
 
                 FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
                         .build();
 
                 FirebaseApp.initializeApp(options);
-                System.out.println("🔥 [FIREBASE] Successfully Initialized using: queue-project-9c331-firebase-adminsdk-fbsvc-1e36769c33.json");
+                System.out.println("🔥 [FIREBASE] Successfully Initialized!");
             }
         } catch (Exception e) {
-            System.err.println("❌ [FIREBASE ERROR] Could not load service account JSON: " + e.getMessage());
+            System.err.println("❌ [FIREBASE ERROR] CRITICAL FAILURE: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
