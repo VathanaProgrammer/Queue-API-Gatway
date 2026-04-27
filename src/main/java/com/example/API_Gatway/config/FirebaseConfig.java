@@ -1,0 +1,29 @@
+package com.example.API_Gatway.config;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+
+@Configuration
+public class FirebaseConfig {
+
+    @PostConstruct
+    public void initialize() {
+        try {
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.getApplicationDefault())
+                        .build();
+
+                FirebaseApp.initializeApp(options);
+                System.out.println("🔥 [FIREBASE] Successfully Initialized via Application Default Credentials!");
+            }
+        } catch (IOException e) {
+            System.err.println("⚠️ [FIREBASE] Initialization skipped: GOOGLE_APPLICATION_CREDENTIALS not set.");
+        }
+    }
+}

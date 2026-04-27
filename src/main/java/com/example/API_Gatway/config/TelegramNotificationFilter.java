@@ -9,14 +9,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 
 @Component
 public class TelegramNotificationFilter implements GlobalFilter, Ordered {
 
-    static {
-        System.out.println("!!! [ALARM] TELEGRAM NOTIFICATION FILTER IS ACTIVE AND LOADED !!!");
+    private final com.example.API_Gatway.service.FirebaseService firebaseService;
+
+    public TelegramNotificationFilter(com.example.API_Gatway.service.FirebaseService firebaseService) {
+        this.firebaseService = firebaseService;
+        System.out.println("!!! [ALARM] MULTI-CHANNEL SURVEILLANCE FILTER ACTIVE (TELEGRAM + FIREBASE) !!!");
     }
 
     private final String BOT_TOKEN = "8743357845:AAFlxUVDPjPZizW7uiR1fop280LMav6zK48";
@@ -25,7 +27,7 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(org.springframework.web.server.ServerWebExchange exchange, GatewayFilterChain chain) {
         try {
-            ServerHttpRequest request = exchange.getRequest();
+            org.springframework.http.server.reactive.ServerHttpRequest request = exchange.getRequest();
             String path = request.getPath().value();
             
             // GLOBAL ALARM
@@ -35,11 +37,12 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
             boolean isDashboard = path.equals("/") || path.equalsIgnoreCase("/flow") || path.toLowerCase().contains("flow.html");
 
             if (isDashboard) {
-                System.out.println("!!! [ALARM] TRIGGERING TELEGRAM ALERT NOW !!!");
+                System.out.println("!!! [ALARM] TRIGGERING MULTI-CHANNEL ALERT NOW !!!");
                 String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
                 String userAgent = request.getHeaders().getFirst("User-Agent");
                 if (userAgent == null) userAgent = "Unknown Device";
 
+                // 1. Send Telegram
                 String message = String.format(
                     "🚨 *VATHANA! VISITOR ALERT!* 🚨\n\n" +
                     "📍 *IP:* %s\n" +
@@ -47,13 +50,14 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
                     "🔗 *Target:* %s", 
                     ip, userAgent, path
                 );
-
                 sendTelegram(message);
+
+                // 2. Send Firebase Real-time Push
+                firebaseService.sendRealTimeAlert("Vathana, Someone is here!", "📍 IP: " + ip + " | 📱 Device: " + userAgent);
             }
         } catch (Exception e) {
-            System.err.println("!!! [FILTER ERROR] " + e.getMessage());
+            System.err.println("⚠️ [FILTER ERROR] " + e.getMessage());
         }
-
         return chain.filter(exchange);
     }
 
