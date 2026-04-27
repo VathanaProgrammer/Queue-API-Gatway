@@ -3,6 +3,9 @@ package com.example.API_Gatway.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+
+import io.jsonwebtoken.io.IOException;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import jakarta.annotation.PostConstruct;
@@ -31,7 +34,9 @@ public class FirebaseConfig {
                         .build();
 
                 FirebaseApp.initializeApp(options);
-                System.out.println("🔥 [FIREBASE] Successfully Initialized!");
+                System.out.println("\n\n**********************************************************");
+                System.out.println("🔥 🔥 🔥 [FIREBASE] SUCCESSFULLY INITIALIZED! 🔥 🔥 🔥");
+                System.out.println("**********************************************************\n");
             }
         } catch (Exception e) {
             System.err.println("❌ [FIREBASE ERROR] CRITICAL FAILURE: " + e.getMessage());
