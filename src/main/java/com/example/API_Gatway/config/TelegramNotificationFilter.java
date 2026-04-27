@@ -30,15 +30,18 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
             org.springframework.http.server.reactive.ServerHttpRequest request = exchange.getRequest();
             String path = request.getPath().value();
             
-            // GLOBAL ALARM
-            System.out.println(">>> [GATEWAY] HIT DETECTED! Path: " + path + " | IP: " + (request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown"));
+            // LOUD LOG FOR EVERY SINGLE HIT
+            System.out.println("🔎 [GATEWAY DEBUG] Request Detected -> Path: '" + path + "'");
 
-            // CATCH EVERYTHING: /, /flow, /flow.html
-            boolean isDashboard = path.equals("/") || path.equalsIgnoreCase("/flow") || path.toLowerCase().contains("flow.html");
+            // AGGRESSIVE MATCHING: Catch anything that looks like a landing or dashboard
+            boolean isDashboard = path.equals("/") || 
+                                 path.isEmpty() || 
+                                 path.equalsIgnoreCase("/flow") || 
+                                 path.toLowerCase().contains("flow");
 
             if (isDashboard) {
                 System.out.println("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
-                System.out.println("⚠️  [SURVEILLANCE] VISITOR DETECTED! TRIGGERING ALERTS...");
+                System.out.println("⚠️  [SURVEILLANCE] VISITOR DETECTED AT: " + path);
                 System.out.println("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
                 
                 String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
