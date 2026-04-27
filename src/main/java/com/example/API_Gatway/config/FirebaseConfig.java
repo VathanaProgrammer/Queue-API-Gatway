@@ -21,8 +21,9 @@ public class FirebaseConfig {
                 try {
                     serviceAccount = new ClassPathResource(fileName).getInputStream();
                 } catch (IOException e) {
-                    System.out.println("⚠️ [FIREBASE] ClassPath load failed, trying absolute path...");
-                    serviceAccount = new java.io.FileInputStream("D:\\SpringProjects\\API\\API-Gatway\\src\\main\\resources\\" + fileName);
+                    System.out.println("⚠️ [FIREBASE] ClassPath load failed, trying relative project path...");
+                    // This works on both Windows and Linux (AWS)
+                    serviceAccount = new java.io.FileInputStream("src/main/resources/" + fileName);
                 }
 
                 FirebaseOptions options = FirebaseOptions.builder()
