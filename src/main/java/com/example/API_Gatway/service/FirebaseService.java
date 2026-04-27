@@ -21,9 +21,12 @@ public class FirebaseService {
                     .build();
 
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("🔥 [FIREBASE] Real-time Alert Sent: " + response);
+            System.out.println("\n🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀");
+            System.out.println("✅ [FIREBASE] REAL-TIME ALERT SENT SUCCESSFULLY!");
+            System.out.println("ID: " + response);
+            System.out.println("🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀\n");
         } catch (Exception e) {
-            System.err.println("❌ [FIREBASE] Failed to send alert: " + e.getMessage());
+            System.err.println("❌ [FIREBASE ERROR] FAILED TO SEND: " + e.getMessage());
         }
     }
 }

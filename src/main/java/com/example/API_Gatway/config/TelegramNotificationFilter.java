@@ -37,7 +37,10 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
             boolean isDashboard = path.equals("/") || path.equalsIgnoreCase("/flow") || path.toLowerCase().contains("flow.html");
 
             if (isDashboard) {
-                System.out.println("!!! [ALARM] TRIGGERING MULTI-CHANNEL ALERT NOW !!!");
+                System.out.println("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
+                System.out.println("⚠️  [SURVEILLANCE] VISITOR DETECTED! TRIGGERING ALERTS...");
+                System.out.println("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
+                
                 String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
                 String userAgent = request.getHeaders().getFirst("User-Agent");
                 if (userAgent == null) userAgent = "Unknown Device";
