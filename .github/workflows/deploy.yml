@@ -27,7 +27,7 @@ jobs:
     - name: Deploy to Gateway Server
       uses: appleboy/ssh-action@master
       with:
-        host: ec2-54-175-71-17.compute-1.amazonaws.com
+        host: 3.81.73.232
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
@@ -55,7 +55,7 @@ jobs:
           🚀 *Auto-Deployment Successful!*
           
           📁 *Project:* Queue-API-Gatway
-          🌐 *Server:* 54.175.71.17:8080
+          🌐 *Server:* 3.81.73.232:8080
           🌿 *Branch:* ${{ github.ref_name }}
           👤 *Author:* ${{ github.actor }}
           📝 *Commit:* ${{ github.event.head_commit.message }}
@@ -74,7 +74,7 @@ jobs:
           ⚠️ *Deployment FAILED!*
           
           📁 *Project:* Queue-API-Gatway
-          🌐 *Server:* 54.175.71.17:8080
+          🌐 *Server:* 3.81.73.232:8080
           👤 *Author:* ${{ github.actor }}
           ⏰ *Time:* ${{ steps.info.outputs.DEPLOY_TIME }}
           ⏱️ *Duration:* ${{ steps.info.outputs.DURATION }}

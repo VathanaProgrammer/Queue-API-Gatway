@@ -6,12 +6,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Controller
 public class FlowController {
 
-    public FlowController() {
+    private final WebClient.Builder webClientBuilder;
+
+    public FlowController(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
     }
 
     private final String BOT_TOKEN = "8743357845:AAFlxUVDPjPZizW7uiR1fop280LMav6zK48";
@@ -29,15 +33,15 @@ public class FlowController {
         // 1. Telegram
         String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage?chat_id=" + CHAT_ID + 
                      "&text=🚀 Vathana, Someone is visiting the Dashboard! (Triggered from Controller)";
-        org.springframework.web.reactive.function.client.WebClient.create()
+        WebClient.create()
             .get().uri(url).retrieve().bodyToMono(String.class)
             .subscribe(s -> System.out.println("✅ Controller Telegram Sent"), e -> System.err.println("❌ Controller Telegram Failed: " + e.getMessage()));
 
-        // 2. Native Real-Time (Queue Service)
-        String queueUrl = "http://localhost:8081/api/queue/trigger";
+        // 2. Native Real-Time (Queue Service) - Using Eureka
+        String queueUrl = "http://queue-service/api/queue/trigger";
         java.util.Map<String, String> payload = java.util.Map.of("ip", "Gateway-Controller", "path", "/flow");
-        org.springframework.web.reactive.function.client.WebClient.create()
+        webClientBuilder.build()
             .post().uri(queueUrl).bodyValue(payload).retrieve().bodyToMono(Void.class)
-            .subscribe(v -> System.out.println("🚀 [NATIVE REAL-TIME] Alert Sent from Controller"), e -> System.err.println("❌ Controller Queue Service Failed"));
+            .subscribe(v -> System.out.println("🚀 [NATIVE REAL-TIME] Alert Sent from Controller"), e -> System.err.println("❌ Controller Queue Service Failed: " + e.getMessage()));
     }
 }

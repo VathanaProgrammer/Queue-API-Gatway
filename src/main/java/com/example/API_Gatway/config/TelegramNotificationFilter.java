@@ -13,7 +13,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class TelegramNotificationFilter implements GlobalFilter, Ordered {
 
-    public TelegramNotificationFilter() {
+    private final WebClient.Builder webClientBuilder;
+
+    public TelegramNotificationFilter(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
         System.out.println("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
         System.out.println("✅ SURVEILLANCE FILTER ACTIVE: NATIVE REAL-TIME READY!");
         System.out.println("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
@@ -54,10 +57,10 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
     }
 
     private void triggerQueueServiceAlert(String ip, String path) {
-        String url = "http://localhost:8081/api/queue/trigger";
+        String url = "http://queue-service/api/queue/trigger"; // lb:// is implicitly handled by LoadBalanced builder
         java.util.Map<String, String> payload = java.util.Map.of("ip", ip, "path", path);
 
-        WebClient.create().post()
+        webClientBuilder.build().post()
                 .uri(url)
                 .bodyValue(payload)
                 .retrieve()
