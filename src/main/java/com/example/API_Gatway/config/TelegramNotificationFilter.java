@@ -3,7 +3,6 @@ package com.example.API_Gatway.config;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.util.MultiValueMap;
@@ -14,11 +13,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class TelegramNotificationFilter implements GlobalFilter, Ordered {
 
-    private final com.example.API_Gatway.service.FirebaseService firebaseService;
-
-    public TelegramNotificationFilter(com.example.API_Gatway.service.FirebaseService firebaseService) {
-        this.firebaseService = firebaseService;
-        System.out.println("!!! [ALARM] MULTI-CHANNEL SURVEILLANCE FILTER ACTIVE (TELEGRAM + FIREBASE) !!!");
+    public TelegramNotificationFilter() {
+        System.out.println("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
+        System.out.println("✅ SURVEILLANCE FILTER ACTIVE: NATIVE REAL-TIME READY!");
+        System.out.println("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
     }
 
     private final String BOT_TOKEN = "8743357845:AAFlxUVDPjPZizW7uiR1fop280LMav6zK48";
@@ -30,9 +28,6 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
             org.springframework.http.server.reactive.ServerHttpRequest request = exchange.getRequest();
             String path = request.getPath().value();
             
-            // LOUD LOG FOR EVERY SINGLE HIT
-            System.out.println("🔎 [GATEWAY DEBUG] Request Detected -> Path: '" + path + "'");
-
             // AGGRESSIVE MATCHING: Catch anything that looks like a landing or dashboard
             boolean isDashboard = path.equals("/") || 
                                  path.isEmpty() || 
@@ -40,26 +35,17 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
                                  path.toLowerCase().contains("flow");
 
             if (isDashboard) {
-                System.out.println("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
-                System.out.println("⚠️  [SURVEILLANCE] VISITOR DETECTED AT: " + path);
-                System.out.println("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
+                System.out.println("🔎 [GATEWAY] Visitor Detected: " + path);
                 
                 String ip = request.getRemoteAddress() != null ? request.getRemoteAddress().getHostString() : "Unknown";
                 String userAgent = request.getHeaders().getFirst("User-Agent");
                 if (userAgent == null) userAgent = "Unknown Device";
 
-                // 1. Send Telegram
-                String message = String.format(
-                    "🚨 *VATHANA! VISITOR ALERT!* 🚨\n\n" +
-                    "📍 *IP:* %s\n" +
-                    "📱 *Device:* %s\n" +
-                    "🔗 *Target:* %s", 
-                    ip, userAgent, path
-                );
-                sendTelegram(message);
+                // 1. Send Telegram Alert
+                sendTelegram(String.format("🚨 *VISITOR!* 🚨\n\nIP: %s\nPath: %s", ip, path));
 
-                // 2. Send Firebase Real-time Push
-                firebaseService.sendRealTimeAlert("Vathana, Someone is here!", "📍 IP: " + ip + " | 📱 Device: " + userAgent);
+                // 2. Send Native Real-Time Alert to Queue Service
+                triggerQueueServiceAlert(ip, path);
             }
         } catch (Exception e) {
             System.err.println("⚠️ [FILTER ERROR] " + e.getMessage());
@@ -67,9 +53,22 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange);
     }
 
+    private void triggerQueueServiceAlert(String ip, String path) {
+        String url = "http://localhost:8081/api/queue/trigger";
+        java.util.Map<String, String> payload = java.util.Map.of("ip", ip, "path", path);
+
+        WebClient.create().post()
+                .uri(url)
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .doOnSuccess(v -> System.out.println("🚀 [NATIVE] Alert pushed to Queue Service!"))
+                .doOnError(e -> System.err.println("❌ Queue Service Failed: " + e.getMessage()))
+                .subscribe();
+    }
+
     private void sendTelegram(String message) {
         String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
-        
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("chat_id", CHAT_ID);
         formData.add("text", message);
@@ -80,13 +79,11 @@ public class TelegramNotificationFilter implements GlobalFilter, Ordered {
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .bodyToMono(String.class)
-                .doOnSuccess(s -> System.out.println("✅ Telegram Alert Sent from Filter!"))
-                .doOnError(e -> System.err.println("❌ Filter Telegram Error: " + e.getMessage()))
                 .subscribe();
     }
 
     @Override
     public int getOrder() {
-        return -1; // Run before anything else
+        return -1;
     }
 }

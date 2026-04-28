@@ -11,16 +11,13 @@ import reactor.core.publisher.Mono;
 @Controller
 public class FlowController {
 
-    private final com.example.API_Gatway.service.FirebaseService firebaseService;
-
-    public FlowController(com.example.API_Gatway.service.FirebaseService firebaseService) {
-        this.firebaseService = firebaseService;
+    public FlowController() {
     }
 
     private final String BOT_TOKEN = "8743357845:AAFlxUVDPjPZizW7uiR1fop280LMav6zK48";
     private final String CHAT_ID = "1694864242";
 
-    @GetMapping(value = {"/", "/flow"}, produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping(value = {"/flow"}, produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public Mono<Resource> getFlow() {
         // MULTI-CHANNEL ALERT (Controller Level)
@@ -36,7 +33,11 @@ public class FlowController {
             .get().uri(url).retrieve().bodyToMono(String.class)
             .subscribe(s -> System.out.println("✅ Controller Telegram Sent"), e -> System.err.println("❌ Controller Telegram Failed: " + e.getMessage()));
 
-        // 2. Firebase
-        firebaseService.sendRealTimeAlert("Vathana, Dashboard Visit!", "Triggered from API Gateway Controller.");
+        // 2. Native Real-Time (Queue Service)
+        String queueUrl = "http://localhost:8081/api/queue/trigger";
+        java.util.Map<String, String> payload = java.util.Map.of("ip", "Gateway-Controller", "path", "/flow");
+        org.springframework.web.reactive.function.client.WebClient.create()
+            .post().uri(queueUrl).bodyValue(payload).retrieve().bodyToMono(Void.class)
+            .subscribe(v -> System.out.println("🚀 [NATIVE REAL-TIME] Alert Sent from Controller"), e -> System.err.println("❌ Controller Queue Service Failed"));
     }
 }
