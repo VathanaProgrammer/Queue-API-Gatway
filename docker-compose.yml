@@ -1,59 +1,9 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: redis-cache
-    ports:
-      - "6379:6379"
-    networks:
-      - microservices-net
-
   eureka-server:
     build: ./Queue-Eureka-Server
     container_name: eureka-server
     ports:
       - "8761:8761"
-    networks:
-      - microservices-net
-
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    ports:
-      - "8989:8989"
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/auth_db
-    networks:
-      - microservices-net
-
-  api-gateway:
-    build: ./API-Gatway
-    container_name: api-gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    networks:
-      - microservices-net
-
-  db:
-    image: postgres:15-alpine
-    container_name: postgres-db
-    environment:
-      - POSTGRES_DB=auth_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - "5432:5432"
-    networks:
-      - microservices-net
-
-networks:
-  microservices-net:
-    driver: bridge
+    restart: always

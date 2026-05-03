@@ -1,4 +1,4 @@
-name: Deploy Microservices
+name: Deploy Eureka Server
 
 on:
   push:
@@ -19,22 +19,19 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven
-        run: |
-          mvn clean package -DskipTests -f Queue-Eureka-Server/pom.xml
-          mvn clean package -DskipTests -f API-Gatway/pom.xml
-          mvn clean package -DskipTests -f auth-service/pom.xml
+      - name: Build Eureka Server
+        run: mvn clean package -DskipTests -f Queue-Eureka-Server/pom.xml
 
-      - name: Copy files to server
+      - name: Copy Eureka to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "Queue-Eureka-Server/target/*.jar,Queue-Eureka-Server/Dockerfile,API-Gatway/target/*.jar,API-Gatway/Dockerfile,auth-service/target/*.jar,auth-service/Dockerfile,docker-compose.yml"
+          source: "Queue-Eureka-Server/target/*.jar,Queue-Eureka-Server/Dockerfile,docker-compose.yml"
           target: "~/app"
 
-      - name: SSH and Deploy
+      - name: SSH and Restart Eureka
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -43,4 +40,4 @@ jobs:
           script: |
             cd ~/app
             sudo docker compose down
-            sudo docker compose up -d --build
+            sudo docker compose up -d --build eureka-server
