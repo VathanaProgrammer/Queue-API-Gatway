@@ -42,5 +42,7 @@ jobs:
             # Build and run the Gateway container
             sudo docker build -t api-gateway .
             sudo docker rm -f api-gateway || true
+            # Kill anything running on 8080 to avoid "port already in use"
+            sudo fuser -k 8080/tcp || true
             # Run the gateway (No internal network needed since it's a separate server)
             sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
