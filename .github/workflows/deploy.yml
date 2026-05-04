@@ -1,4 +1,4 @@
-name: Deploy Gateway and Eureka
+name: Deploy API Gateway
 
 on:
   push:
@@ -19,27 +19,27 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build Services
-        run: |
-          mvn clean package -DskipTests -f Queue-Eureka-Server/pom.xml
-          mvn clean package -DskipTests -f API-Gatway/pom.xml
+      - name: Build API Gateway
+        run: mvn clean package -DskipTests -f API-Gatway/pom.xml
 
-      - name: Copy Files to server
+      - name: Copy Gateway to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
+          host: "3.81.73.232"
+          username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "Queue-Eureka-Server/target/*.jar,Queue-Eureka-Server/Dockerfile,API-Gatway/target/*.jar,API-Gatway/Dockerfile,docker-compose.yml"
+          source: "API-Gatway/target/*.jar,API-Gatway/Dockerfile"
           target: "~/app"
 
-      - name: SSH and Restart Services
+      - name: SSH and Restart Gateway
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
+          host: "3.81.73.232"
+          username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/app
-            sudo docker compose down
-            sudo docker compose up -d --build eureka-server api-gateway
+            # Build and run the Gateway container
+            sudo docker build -t api-gateway ./API-Gatway
+            sudo docker rm -f api-gateway || true
+            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
