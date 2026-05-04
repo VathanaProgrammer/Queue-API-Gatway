@@ -1,0 +1,35 @@
+# Build folders
+/target/
+/build/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE (IntelliJ, VS Code, Eclipse)
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Java
+*.class
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Env / secrets
+.env
+application-prod.yml
+
+# Node (if Angular frontend)
+node_modules/
+dist/
+
+# Mac/Linux temp
+*.swp
