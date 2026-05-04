@@ -1,9 +1,0 @@
-version: '3.8'
-
-services:
-  eureka-server:
-    build: ./Queue-Eureka-Server
-    container_name: eureka-server
-    ports:
-      - "8761:8761"
-    restart: always
