@@ -1,0 +1,47 @@
+name: Deploy API Gateway
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build API Gateway
+        # If we are in the API-Gatway folder, the pom.xml is in the root
+        run: mvn clean package -DskipTests
+
+      - name: Copy Gateway to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: "3.81.73.232"
+          username: "ubuntu"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Path to the jar after building in the root
+          source: "target/*.jar,Dockerfile"
+          target: "~/app"
+
+      - name: SSH and Restart Gateway
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: "3.81.73.232"
+          username: "ubuntu"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/app
+            # Build and run the Gateway container
+            sudo docker build -t api-gateway .
+            sudo docker rm -f api-gateway || true
+            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
