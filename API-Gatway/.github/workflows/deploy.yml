@@ -39,32 +39,42 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
-
             cd ~/app/API-Gatway
 
-            echo "Stopping old api-gateway container..."
+            echo "Remove old Docker container..."
             sudo docker rm -f api-gateway || true
 
-            echo "Killing anything still using port 8080..."
-            sudo fuser -k 8080/tcp || true
-            sleep 2
-
-            echo "Checking port 8080..."
+            echo "Show who uses 8080 before killing..."
             sudo lsof -i :8080 || true
 
-            echo "Building new Docker image..."
+            echo "Kill process using 8080..."
+            PID=$(sudo lsof -t -i:8080 || true)
+            if [ -n "$PID" ]; then
+              echo "Killing PID: $PID"
+              sudo kill -9 $PID || true
+            fi
+
+            sleep 3
+
+            echo "Check 8080 again..."
+            sudo lsof -i :8080 || true
+
+            echo "If port is still used, stop deploy..."
+            if sudo lsof -i :8080; then
+              echo "ERROR: Port 8080 is still used. Something restarted automatically."
+              ps -fp $(sudo lsof -t -i:8080) || true
+              exit 1
+            fi
+
+            echo "Build image..."
             sudo docker build -t api-gateway .
 
-            echo "Starting new api-gateway container..."
+            echo "Run api-gateway..."
             sudo docker run -d \
               --name api-gateway \
               --restart unless-stopped \
               -p 8080:8080 \
               api-gateway
 
-            echo "Running containers:"
             sudo docker ps
-
-            echo "Gateway logs:"
             sudo docker logs --tail=80 api-gateway
