@@ -7,3 +7,22 @@ services:
     ports:
       - "8761:8761"
     restart: always
+    networks:
+      - microservices-net
+
+  api-gateway:
+    build: ./API-Gatway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
