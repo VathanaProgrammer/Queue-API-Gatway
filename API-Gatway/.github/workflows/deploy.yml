@@ -20,7 +20,6 @@ jobs:
           cache: 'maven'
 
       - name: Build API Gateway
-        # If we are in the API-Gatway folder, the pom.xml is in the root
         run: mvn clean package -DskipTests
 
       - name: Copy Gateway to server
@@ -29,7 +28,6 @@ jobs:
           host: "3.81.73.232"
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Path to the jar after building in the root
           source: "target/*.jar,Dockerfile"
           target: "~/app"
 
@@ -44,4 +42,5 @@ jobs:
             # Build and run the Gateway container
             sudo docker build -t api-gateway .
             sudo docker rm -f api-gateway || true
+            # Run the gateway (No internal network needed since it's a separate server)
             sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
