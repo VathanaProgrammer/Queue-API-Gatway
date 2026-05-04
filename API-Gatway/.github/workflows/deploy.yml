@@ -39,7 +39,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/app
-            # We build and run just the gateway container
+            # Build the Gateway container on the Gateway server
             sudo docker build -t api-gateway ./API-Gatway
             sudo docker rm -f api-gateway || true
-            sudo docker run -d --name api-gateway -p 8080:8080 --network app_microservices-net api-gateway
+            # Run the gateway on port 8080
+            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
