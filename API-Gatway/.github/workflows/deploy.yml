@@ -45,5 +45,5 @@ jobs:
             # Build and run using the correct sub-folder path
             sudo docker build -t api-gateway .
             sudo docker rm -f api-gateway || true
-            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
+            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway  
  
