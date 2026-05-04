@@ -16,7 +16,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/auth/**").permitAll()
-                        .pathMatchers("/api/queue/**").permitAll()
+                        .pathMatchers("/api/queue/**").authenticated()
                         .pathMatchers("/api/notifications/**").authenticated()
                         .anyExchange().permitAll()
                 );
