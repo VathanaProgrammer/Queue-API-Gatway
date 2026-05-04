@@ -38,7 +38,7 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app/API-Gatway
+            cd ~/app/API-Gatway 
             # Force kill anything on 8080
             sudo fuser -k 8080/tcp || true
             sleep 2
@@ -46,3 +46,4 @@ jobs:
             sudo docker build -t api-gateway .
             sudo docker rm -f api-gateway || true
             sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
+ 
