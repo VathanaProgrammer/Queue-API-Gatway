@@ -9,6 +9,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      PROJECT_NAME: Queue-API-Gatway
+      SERVER_URL: 3.81.73.232:8080
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,7 +25,6 @@ jobs:
           cache: "maven"
 
       - name: Capture Start Time
-        id: start_time
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Build API Gateway
@@ -60,53 +63,49 @@ jobs:
             fi
 
             sudo docker build -t api-gateway .
+
             sudo docker run -d \
               --name api-gateway \
               --restart unless-stopped \
               -p 8080:8080 \
               api-gateway
 
-      - name: Calculate Duration
-        id: duration
+            sudo docker ps
+            sudo docker logs --tail=80 api-gateway
+
+      - name: Send Telegram Message
+        if: always()
         run: |
           END_TIME=$(date +%s)
-          DURATION=$((END_TIME - $START_TIME))
-          echo "DURATION=${DURATION}" >> $GITHUB_ENV
+          TOTAL_SECONDS=$((END_TIME - START_TIME))
+          MINUTES=$((TOTAL_SECONDS / 60))
+          SECONDS=$((TOTAL_SECONDS % 60))
 
-      - name: Send Telegram Message - Success
-        if: success()
-        run: |
-          TIME_NOW=$(date +"%Y-%m-%d %I:%M %p")
+          TIME_NOW=$(TZ="Asia/Phnom_Penh" date +"%Y-%m-%d %I:%M %p")
+          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+          STATUS="${{ job.status }}"
 
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="Markdown" \
-            -d text="🚀 *Auto-Deployment Successful!*
+          if [ "$STATUS" = "success" ]; then
+            TITLE="🚀 Auto-Deployment Successful!"
+            STATUS_TEXT="✅ Status: Online and healthy."
+          else
+            TITLE="❌ Auto-Deployment Failed!"
+            STATUS_TEXT="⚠️ Status: Failed. Please check GitHub Actions logs."
+          fi
 
-              📁 *Project:* API-Gatway
-              🌐 *Server:* 3.81.73.232:8080
-              🌿 *Branch:* ${GITHUB_REF_NAME}
-              👤 *Author:* ${GITHUB_ACTOR}
-              📝 *Commit:* $(git log -1 --pretty=%s)
-              ⏰ *Time:* ${TIME_NOW}
-              ⏱️ *Duration:* ${DURATION}s
+          MESSAGE="$TITLE
 
-              ✅ *Status:* Online and healthy."
+          📁 Project: $PROJECT_NAME
+          🌐 Server: $SERVER_URL
+          🌿 Branch: $GITHUB_REF_NAME
+          👤 Author: $GITHUB_ACTOR
+          📝 Commit: $COMMIT_MESSAGE
+          ⏰ Time: $TIME_NOW
+          ⏱️ Duration: ${MINUTES}m ${SECONDS}s
 
-      - name: Send Telegram Message - Failed
-        if: failure()
-        run: |
-          TIME_NOW=$(date +"%Y-%m-%d %I:%M %p")
+          $STATUS_TEXT"
 
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="Markdown" \
-            -d text="❌ *Deployment Failed!*
-
-            📁 *Project:* API-Gatway
-            🌿 *Branch:* ${GITHUB_REF_NAME}
-            👤 *Author:* ${GITHUB_ACTOR}
-            📝 *Commit:* $(git log -1 --pretty=%s)
-            ⏰ *Time:* ${TIME_NOW}
-
-            ⚠️ Please check GitHub Actions logs."
+          echo "Sending Telegram message..."
+          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            --data-urlencode "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            --data-urlencode "text=$MESSAGE"
