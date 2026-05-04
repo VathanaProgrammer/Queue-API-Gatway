@@ -25,7 +25,7 @@ jobs:
       - name: Copy Gateway to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: "100.30.182.141"
+          host: "3.81.73.232"
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "API-Gatway/target/*.jar,API-Gatway/Dockerfile"
@@ -34,7 +34,7 @@ jobs:
       - name: SSH and Restart Gateway
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: "100.30.182.141"
+          host: "3.81.73.232"
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
