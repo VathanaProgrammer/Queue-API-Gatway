@@ -68,7 +68,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://100.30.182.141:8761/eureka/
 
 # Security Config
 jwt:
