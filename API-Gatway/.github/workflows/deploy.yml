@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -15,9 +16,9 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
 
       - name: Build API Gateway
         run: mvn clean package -DskipTests
@@ -38,12 +39,32 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app/API-Gatway 
-            # Force kill anything on 8080
+            set -e
+
+            cd ~/app/API-Gatway
+
+            echo "Stopping old api-gateway container..."
+            sudo docker rm -f api-gateway || true
+
+            echo "Killing anything still using port 8080..."
             sudo fuser -k 8080/tcp || true
             sleep 2
-            # Build and run using the correct sub-folder path
+
+            echo "Checking port 8080..."
+            sudo lsof -i :8080 || true
+
+            echo "Building new Docker image..."
             sudo docker build -t api-gateway .
-            sudo docker rm -f api-gateway || true
-            sudo docker run -d --name api-gateway -p 8080:8080 api-gateway  
- 
+
+            echo "Starting new api-gateway container..."
+            sudo docker run -d \
+              --name api-gateway \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              api-gateway
+
+            echo "Running containers:"
+            sudo docker ps
+
+            echo "Gateway logs:"
+            sudo docker logs --tail=80 api-gateway
