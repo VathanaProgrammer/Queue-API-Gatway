@@ -1,4 +1,4 @@
-name: Deploy API Gateway
+name: Deploy API Gateway v2.0
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/*.jar,Dockerfile"
-          target: "~/app"
+          target: "~/app/API-Gatway"
 
       - name: SSH and Restart Gateway
         uses: appleboy/ssh-action@v1.0.3
@@ -38,11 +38,11 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app
+            cd ~/app/API-Gatway
             # Force kill anything on 8080
             sudo fuser -k 8080/tcp || true
             sleep 2
-            # Build and run
+            # Build and run using the correct sub-folder path
             sudo docker build -t api-gateway .
             sudo docker rm -f api-gateway || true
             sudo docker run -d --name api-gateway -p 8080:8080 api-gateway
