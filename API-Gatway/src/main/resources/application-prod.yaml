@@ -55,7 +55,7 @@ spring:
                 - name: Authentication
                 - name: CircuitBreaker
                   args:
-                    name: notificationService
+                    name: notificationService 
                     fallbackUri: forward:/notificationFallback
 
   # Redis for Rate Limiting
@@ -68,7 +68,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://100.30.182.141:8761/eureka/
 
 # Security Config
 jwt:
