@@ -90,7 +90,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
           message: |
-            ${{ job.status == 'success' && '🙌 *Hello Team ខ្សោយ*' || '❌ *ចប់! ថាខ្សោយខ្សោយមេន Team នេះ!*' }}
+            ${{ job.status == 'success' && '🙌 *Hello Team ខ្សោយ*' || '❌ *😡 ចប់! ថាខ្សោយខ្សោយមេន Team នេះ!*' }}
 
             ${{ job.status == 'success' && '🚀 *Auto-Deployment Successful!*' || '❌ *Auto-Deployment Failed!*' }}
 
