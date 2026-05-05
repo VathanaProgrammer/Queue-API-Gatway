@@ -73,41 +73,31 @@ jobs:
             sudo docker ps
             sudo docker logs --tail=80 api-gateway
 
-      - name: Send Telegram Message
+      - name: Get Formatted Time & Duration
         if: always()
+        id: info
         run: |
           END_TIME=$(date +%s)
-          TOTAL_SECONDS=$((END_TIME - START_TIME))
-          MINUTES=$((TOTAL_SECONDS / 60))
-          SECONDS=$((TOTAL_SECONDS % 60))
+          DURATION=$((END_TIME - START_TIME))
+          echo "DEPLOY_TIME=$(TZ='Asia/Phnom_Penh' date +'%Y-%m-%d %I:%M %p')" >> $GITHUB_OUTPUT
+          echo "DURATION=$((DURATION / 60))m $((DURATION % 60))s" >> $GITHUB_OUTPUT
 
-          TIME_NOW=$(TZ="Asia/Phnom_Penh" date +"%Y-%m-%d %I:%M %p")
-          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+      - name: Send Telegram Notification
+        if: always()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          message: |
+            ${{ job.status == 'success' && '🚀 *Auto-Deployment Successful!*' || '❌ *Auto-Deployment Failed!*' }}
 
-          if [ "${{ job.status }}" = "success" ]; then
-            TITLE="🚀 Auto-Deployment Successful!"
-            STATUS_TEXT="✅ Status: Online and healthy."
-          else
-            TITLE="❌ Auto-Deployment Failed!"
-            STATUS_TEXT="⚠️ Status: Failed. Please check GitHub Actions logs."
-          fi
+            📁 *Project:* ${{ env.PROJECT_NAME }}
+            🌐 *Server:* ${{ env.SERVER_URL }}
+            🌿 *Branch:* ${{ github.ref_name }}
+            👤 *Author:* ${{ github.actor }}
+            📝 *Commit:* ${{ github.event.head_commit.message }}
+            ⏰ *Time:* ${{ steps.info.outputs.DEPLOY_TIME }}
+            ⏱️ *Duration:* ${{ steps.info.outputs.DURATION }}
 
-          MESSAGE=$(cat <<EOF
-          $TITLE
-
-          📁 Project: $PROJECT_NAME
-          🌐 Server: $SERVER_URL
-          🌿 Branch: $GITHUB_REF_NAME
-          👤 Author: $GITHUB_ACTOR
-          📝 Commit: $COMMIT_MESSAGE
-          ⏰ Time: $TIME_NOW
-          ⏱️ Duration: ${MINUTES}m ${SECONDS}s
-
-          $STATUS_TEXT
-          EOF
-          )
-
-          echo "Sending Telegram message..."
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            --data-urlencode "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-            --data-urlencode "text=$MESSAGE"
+            ${{ job.status == 'success' && '✅ *Status:* Online and healthy.' || '⚠️ *Status:* Failed. Please check logs!' }}
