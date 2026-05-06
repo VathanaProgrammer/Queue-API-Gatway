@@ -1,12 +1,13 @@
 package com.example.API_Gatway.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TeamController {
@@ -32,7 +33,7 @@ public class TeamController {
 
         return Map.of(
             "message", "Hi you are from " + ip ,
-            "team_members", members
+            "team_members", members         
         );
     }
 }
