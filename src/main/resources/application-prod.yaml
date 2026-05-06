@@ -22,7 +22,7 @@ spring:
           # New key for Routes
           routes:
             - id: auth-service
-              uri: http://172.31.32.58:8080
+              uri: lb://AUTH-SERVICE
               predicates:
                 - Path=/api/auth/**
               filters:
