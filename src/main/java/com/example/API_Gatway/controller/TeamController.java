@@ -32,6 +32,7 @@ public class TeamController {
         );
 
         return Map.of(
+            "Gatway Ip: ","3.94.83.161:8080",
             "message", "Hi you are from " + ip ,
             "team_members", members         
         );
