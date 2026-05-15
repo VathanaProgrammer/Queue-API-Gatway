@@ -11,7 +11,7 @@ services:
       - microservices-net
 
   api-gateway:
-    build: ./API-Gatway
+    build: .
     container_name: api-gateway
     ports:
       - "8080:8080"

@@ -11,7 +11,7 @@ jobs:
 
     env:
       PROJECT_NAME: Queue-API-Gatway
-      SERVER_URL: 3.81.73.232:8080
+      SERVER_URL: 3.94.83.161:8080
 
     steps:
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
       - name: Copy Gateway to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: "3.81.73.232"
+          host: "3.94.83.161"
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/*.jar,Dockerfile"
@@ -42,7 +42,7 @@ jobs:
       - name: SSH and Restart Gateway
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: "3.81.73.232"
+          host: "3.94.83.161"
           username: "ubuntu"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
@@ -67,6 +67,7 @@ jobs:
             sudo docker run -d \
               --name api-gateway \
               --restart unless-stopped \
+              -e SPRING_PROFILES_ACTIVE=prod \
               -p 8080:8080 \
               api-gateway
 
